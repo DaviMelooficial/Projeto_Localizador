@@ -1,0 +1,76 @@
+<!-- templates/update.html -->
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Atualizar Localização</title>
+</head>
+<body>
+    <h1>Atualizar Localização para {{ carro[0] }}</h1>
+
+    <!-- Formulário hidden para atualizar localização -->
+    <form id="Form_atualizacao" method="POST" action="{{ url_for('atualiza_localizacao') }}">
+        <input type="hidden" id="placa" name="placa" value="{{ carro[0] }}">
+        <input type="hidden" id="latitude" name="latitude">
+        <input type="hidden" id="longitude" name="longitude">
+    </form>
+
+    <!-- Botão para obter localização via GPS -->
+    <button onclick="getLocation()">Obter Localização Atual</button>
+
+    <!-- Exibir coordenadas obtidas -->
+    <p id="locationMessage"></p>
+
+    <script>
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition, showError);
+            } else {
+                document.getElementById("locationMessage").innerHTML = "Geolocalização não é suportada pelo navegador.";
+            }
+        }
+
+        function showPosition(position) {
+            // Preencher o formulário com a latitude e longitude
+            document.getElementById("latitude").value = position.coords.latitude;
+            document.getElementById("longitude").value = position.coords.longitude;
+
+            // Enviar o formulário para o servidor
+            document.getElementById("Form_atualizacao").submit();
+
+            // Mostrar as coordenadas na página
+            document.getElementById("locationMessage").innerHTML =
+                "Latitude: " + position.coords.latitude + "<br>Longitude: " + position.coords.longitude;
+        }
+
+        function showError(error) {
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    document.getElementById("locationMessage").innerHTML = "Usuário negou a solicitação de Geolocalização.";
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    document.getElementById("locationMessage").innerHTML = "Informação de localização indisponível.";
+                    break;
+                case error.TIMEOUT:
+                    document.getElementById("locationMessage").innerHTML = "A solicitação para obter a localização expirou.";
+                    break;
+                case error.UNKNOWN_ERROR:
+                    document.getElementById("locationMessage").innerHTML = "Um erro desconhecido ocorreu.";
+                    break;
+            }
+        }
+    </script>
+
+    <!-- Histórico de localizações -->
+    <h2>Histórico de Localizações</h2>
+    <ul>
+        {% for loc in historico %}
+            <li>{{ loc[1] }}: Lat: {{ loc[2] }}, Lng: {{ loc[3] }}</li>
+        {% endfor %}
+    </ul>
+
+    {% if error %}
+        <p style="color:red">{{ error }}</p>
+    {% endif %}
+</body>
+</html>
